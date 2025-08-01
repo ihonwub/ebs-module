@@ -1,0 +1,4 @@
+apiVersion: platformx.io/v1alpha1
+kind: EBS
+metadata:
+  name: example-ebs

@@ -1,0 +1,115 @@
+apiVersion: platform.kratix.io/v1alpha1
+kind: Promise
+metadata:
+  name: ebs
+  labels:
+    kratix.io/promise-version: v0.0.1
+spec:
+  api:
+    apiVersion: apiextensions.k8s.io/v1
+    kind: CustomResourceDefinition
+    metadata:
+      name: ebss.platformx.io
+    spec:
+      group: platformx.io
+      names:
+        kind: EBS
+        plural: ebss
+        singular: ebs
+      scope: Namespaced
+      versions:
+        - name: v1alpha1
+          schema:
+            openAPIV3Schema:
+              type: object
+              properties:
+                spec:
+                  properties:
+                    application:
+                      description: Value for Application tag
+                      type: string
+                    availability_zone:
+                      description: AZ to start the instance(s) in
+                      type: string
+                    device_name:
+                      description: EBS volume device name to mount the volume
+                      type: string
+                    ebs_volume_name:
+                      default: ""
+                      description: Name(s) of the ebs volume
+                      type: string
+                    ebs_volume_size:
+                      description: EBS volume size in Gibytes (GiB)
+                      type: string
+                    ebs_volume_type:
+                      default: gp3
+                      description: Type of volumes. Valid values include standard, gp2, io1, sc1, st1,
+                        etc.
+                      type: string
+                    encrypted:
+                      default: true
+                      description: Whether to encrypt EBS volume or not, by default true
+                      type: boolean
+                    environment:
+                      description: Value for Environment tag (i.e. dev, test, prod)
+                      type: string
+                    function:
+                      description: Value for the Function tag
+                      type: string
+                    instance_id:
+                      description: EC2 instance id to attach EBS volume to
+                      type: string
+                    iops:
+                      description: The amount of IOPS to provision for the disk
+                      type: string
+                    kms_key_arn:
+                      description: KMS key arn to use for encrypting volume
+                      type: string
+                    mission:
+                      description: Value for Mission tag (i.e. rma, fsa, nrcs)
+                      type: string
+                    purpose:
+                      description: Value for the Purpose tag
+                      type: string
+                    software:
+                      description: Value for Software tag
+                      type: string
+                    tags:
+                      additionalProperties:
+                        type: string
+                      default: {}
+                      description: A mapping of additional tags to assign to the resource
+                      type: object
+                    throughput:
+                      description: The throughput that the volume supports, in MiB/s
+                      type: string
+                    tier:
+                      description: Value for Tier tag (i.e. appserver, db)
+                      type: string
+                  type: object
+                  
+          served: true
+          storage: true
+  destinationSelectors:
+    - matchLabels:
+        environment: terraform
+  workflows:
+    promise:
+      configure:
+        []
+    resource:
+      configure:
+        - apiVersion: platform.kratix.io/v1alpha1
+          kind: Pipeline
+          metadata:
+            name: instance-configure
+          spec:
+            containers:
+            - env:
+              - name: MODULE_SOURCE
+                value: https://github.com/ihonwub/ebs-module.git
+              - name: MODULE_VERSION
+                value: v0.0.1
+              image: ghcr.io/syntasso/kratix-cli/terraform-generate:v0.1.0
+              name: terraform-generate
+        
